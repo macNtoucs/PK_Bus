@@ -7,16 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
-#define ButtonText1 @"加入通知"
-#define ButtonText2 @"加入常用"
-#define ButtonText3 @"返回主頁"
-#define ButtonText4 @"常用站牌"
-#define AlarmUserDefaultKey @"alarm"
-#define FavoriteUserDefaultKey @"user"
-#define RouteNameKey @"Key1"
-#define StopNameKey @"Key2"
 
-@interface ToolBarController : NSObject{
+#define TPButtonText1 @"加入通知"
+#define TPButtonText2 @"加入常用"
+#define TPButtonText3 @"返回主頁"
+#define TPButtonText4 @"常用站牌"
+#define TPAlarmUserDefaultKey @"alarm"
+#define TPFavoriteUserDefaultKey @"userTP"
+#define TPRouteNameKey @"Key1"
+#define TPStopNameKey @"Key2"
+
+@interface TPToolBarController : NSObject{
     UIToolbar* toolbarcontroller;
     UIButton *button;
     int ButtonMode;
@@ -29,8 +30,7 @@
 -(UIToolbar *)CreatTabBarWithNoFavorite:(BOOL) favorite delegate:(id)dele;
 -(UIButton *)CreateButton:(NSIndexPath *)indexPath;
 -(void) isStopAdded : (NSString*) input andStop: (NSString*)thisStop;
-- (void)hideTabBar:(UITabBarController *) tabbarcontroller;
-- (void)showTabBar:(UITabBarController *) tabbarcontroller;
+
 @property (nonatomic, retain) UIToolbar* toolbarcontroller;
 @property (nonatomic, retain) UIButton *button;
 @property (nonatomic, retain)UIImageView *success;

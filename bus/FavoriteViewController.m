@@ -141,6 +141,7 @@ int rowNumberInSection [300] ={0};
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    [self.toolbar hideTabBar:self.tabBarController];
     [self fetchDatafromPlist];
   /*  NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     favoriteDic = [[prefs objectForKey:@"user"] mutableCopy];
@@ -185,6 +186,7 @@ int rowNumberInSection [300] ={0};
 - (void)viewWillDisappear:(BOOL)animated
 {
     [toolbar.toolbarcontroller removeFromSuperview];
+    [self.toolbar showTabBar: self.tabBarController];
     [super viewWillDisappear:animated];
 }
 

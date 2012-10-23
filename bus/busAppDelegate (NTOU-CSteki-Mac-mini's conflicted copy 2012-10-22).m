@@ -31,12 +31,11 @@
     root.title = @"基隆公車";
     UINavigationController *navC1 = [[UINavigationController alloc] initWithRootViewController:root];
     TPRootViewController *TProot = [[TPRootViewController alloc] initWithStyle:UITableViewStyleGrouped];
-    TProot.title = @"台北公車"; 
+    TProot.title = @"台北公車";
     UINavigationController *navC2 = [[UINavigationController alloc] initWithRootViewController:TProot];
-    tabBarController = [[UITabBarController alloc] init];
+    UITabBarController *tabBarController = [[UITabBarController alloc] init];
     NSArray* controllers = [NSArray arrayWithObjects:navC2, navC1, nil];
     tabBarController.viewControllers = controllers;
-    tabBarController.delegate = self;
     self.window.rootViewController = tabBarController;
   //  root.view.backgroundColor = [UIColor clearColor];
     [self.window makeKeyAndVisible];
@@ -86,26 +85,7 @@
 }
 
 
-- (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController{
-   
-    
-    UIViewAnimationTransition trans;
-    if ([viewController.title isEqualToString:@"台北公車"]){
-        if (tabbarTag == 0) return;
-        trans = UIViewAnimationTransitionFlipFromRight;
-        tabbarTag = 0;
-    }
-    else{
-        if (tabbarTag == 1) return;
-        trans = UIViewAnimationTransitionFlipFromLeft;
-        tabbarTag = 1;
-        }
-    [UIView beginAnimations: nil context: nil];
-   
-    [UIView setAnimationTransition: trans forView: [self window] cache: YES];
-    [UIView commitAnimations];
 
-}
 -(void)updateNotification:(NSArray *)notificationArray{
     
     if (notificationArray == nil || notificationArray.count ==0) return;
@@ -232,15 +212,15 @@
         [application cancelAllLocalNotifications];
         [alert release];
     }
-    if ([self.tabBarController.navigationController.topViewController isKindOfClass:[DepatureViewController class]]) {
-        UITableViewController* firstLevelViewController =(UITableViewController* )self.tabBarController.navigationController.topViewController;
+    if ([self.nav.topViewController isKindOfClass:[DepatureViewController class]]) {
+        UITableViewController* firstLevelViewController =(UITableViewController* )self.nav.topViewController;
         [firstLevelViewController.tableView reloadData];
     }
     else{
         DepatureViewController *detail = [DepatureViewController new];
         detail.title = @"站牌資訊";
         [detail getURL:[[[[temp objectAtIndex:index+1] componentsSeparatedByString:@"&"] objectAtIndex:0] stringByReplacingOccurrencesOfString:@"result" withString:@"stop"] andRoute:[temp objectAtIndex:index] andCorrect:NO];
-        [self.tabBarController.navigationController pushViewController:detail animated:NO];
+        [self.nav pushViewController:detail animated:NO];
         [detail release];
     }
     

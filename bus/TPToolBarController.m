@@ -6,12 +6,13 @@
 //
 //
 
-#import "ToolBarController.h"
-#import "DepatureViewController.h"
-#import "SearchStopRouteViewController.h"
+#import "TPToolBarController.h"
+#import "TPRouteDetailViewController.h"
+#import "TPSearchStopRouteViewController.h"
 #import "AlertViewDelegate.h"
-#import "FavoriteViewController.h"
-@implementation ToolBarController
+#import "TPFavoriteViewController.h"
+
+@implementation TPToolBarController
 @synthesize toolbarcontroller;
 @synthesize button;
 @synthesize success;
@@ -19,7 +20,7 @@
 
 -(id)init{
     if (self ==[super init]) {
-        
+
         toolbarcontroller = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 436, 320, 44)];
         
         toolbarcontroller.barStyle = UIBarButtonItemStyleBordered;
@@ -33,50 +34,6 @@
     return self;
 }
 
-
-- (void)hideTabBar:(UITabBarController *) tabbarcontroller
-{
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:0.5];
-    
-    for(UIView *view in tabbarcontroller.view.subviews)
-    {
-        if([view isKindOfClass:[UITabBar class]])
-        {
-            [view setFrame:CGRectMake(view.frame.origin.x, 480, view.frame.size.width, view.frame.size.height)];
-        }
-        else
-        {
-            [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 480)];
-        }
-    }
-    
-    [UIView commitAnimations];
-}
-
-- (void)showTabBar:(UITabBarController *) tabbarcontroller
-{
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:0.5];
-    for(UIView *view in tabbarcontroller.view.subviews)
-    {
-        NSLog(@"%@", view);
-        
-        if([view isKindOfClass:[UITabBar class]])
-        {
-            [view setFrame:CGRectMake(view.frame.origin.x, 431, view.frame.size.width, view.frame.size.height)];
-            
-        }
-        else
-        {
-            [view setFrame:CGRectMake(view.frame.origin.x, view.frame.origin.y, view.frame.size.width, 431)];
-        }
-    }
-    
-    [UIView commitAnimations];
-}
-
-
 -(NSString*) fixedStringBrackets : (NSString *)oldString
 {
     NSString* newString = [NSString new] ;
@@ -87,13 +44,11 @@
         return oldString;
     
 }
--(UILocalNotification *)returnLocalNotifiction{
-    return localNotif;
 
-}
+
 
 -(void)addNotification:(NSString *)timeData RouteName:(NSString *)RouteName andStopName:(NSString *)StopName{
-
+    
     localNotif = [[UILocalNotification alloc] init];
     if (localNotif == nil){
         UIAlertView* alert = [[UIAlertView alloc]
@@ -105,7 +60,7 @@
         return;
     }
     NSString *pureNumbers = [[timeData componentsSeparatedByCharactersInSet:[[NSCharacterSet characterSetWithCharactersInString:@"0123456789"] invertedSet]] componentsJoinedByString:@""];
-
+    
     if (![pureNumbers intValue]) {
         UIAlertView* alert = [[UIAlertView alloc]
                               initWithTitle:nil message:[NSString stringWithFormat:@"%@",timeData]
@@ -122,28 +77,28 @@
     
     localNotif.soundName = UILocalNotificationDefaultSoundName;
     localNotif.applicationIconBadgeNumber = 1;
-    localNotif.userInfo = [NSDictionary dictionaryWithObjectsAndKeys:RouteName,RouteNameKey,StopName,StopNameKey, nil];
-    localNotif.alertBody = [NSString stringWithFormat:@"%@\n%@\n即將到站.....",[localNotif.userInfo objectForKey:RouteNameKey],[localNotif.userInfo objectForKey:StopNameKey]];
+    localNotif.userInfo = [NSDictionary dictionaryWithObjectsAndKeys:RouteName,TPRouteNameKey,StopName,TPStopNameKey, nil];
+    localNotif.alertBody = [NSString stringWithFormat:@"%@\n%@\n即將到站.....",[localNotif.userInfo objectForKey:TPRouteNameKey],[localNotif.userInfo objectForKey:TPStopNameKey]];
     [[UIApplication sharedApplication] scheduleLocalNotification:localNotif];
     [localNotif release];
     UIAlertView* alert = [[UIAlertView alloc]
-                          initWithTitle:nil message:[NSString stringWithFormat:@"%@\n%@\n加入通知",[localNotif.userInfo objectForKey:RouteNameKey],[localNotif.userInfo objectForKey:StopNameKey]]
+                          initWithTitle:nil message:[NSString stringWithFormat:@"%@\n%@\n加入通知",[localNotif.userInfo objectForKey:TPRouteNameKey],[localNotif.userInfo objectForKey:TPStopNameKey]]
                           delegate:nil cancelButtonTitle:@"確定"
                           otherButtonTitles: nil];
     [alert show];
-
 }
 
 -(void)removeNotificationRouteName:(NSString *)RouteName andStopName:(NSString *)StopName{
     NSArray *notificationArray = [[UIApplication sharedApplication]  scheduledLocalNotifications];
     for (UILocalNotification *row in notificationArray) {
-        if ([[row.userInfo objectForKey:RouteNameKey] isEqualToString: RouteName]&&[[row.userInfo objectForKey:StopNameKey]isEqualToString:StopName]) {
+        if ([[row.userInfo objectForKey:TPRouteNameKey] isEqualToString: RouteName]&&[[row.userInfo objectForKey:TPStopNameKey]isEqualToString:StopName]) {
             [[UIApplication sharedApplication] cancelLocalNotification:row];
         }
     }
 }
 
 -(IBAction)SaveUserDefault:(id)sender{
+    NSLog(@"toolbar.m SaveUserDefault");
     int Tag = [sender tag]%1000-1;
     int section = [sender tag]/1000;
     NSUserDefaults *prefs = [[NSUserDefaults standardUserDefaults]retain];
@@ -151,11 +106,27 @@
     NSString * fixedStringStopName;
     NSString *RouteName;
     if (Fix) {
-        RouteName = [delegate Route];
-        favoriteData = [[NSMutableArray alloc] initWithObjects: RouteName , [[delegate m_waitTime] objectAtIndex:Tag],nil];
-        fixedStringStopName = [self fixedStringBrackets: [[delegate m_RouteResult] objectAtIndex:Tag]];
+        RouteName = [delegate busName];
+        
+        if([delegate isKindOfClass:[SecondLevelViewController class]])
+        {
+            if(section == 0)
+            {
+                favoriteData = [[NSMutableArray alloc] initWithObjects: RouteName , [[delegate goIDs] objectAtIndex:Tag],nil];
+                fixedStringStopName = [self fixedStringBrackets: [[delegate stopsGo] objectAtIndex:Tag]];
+            }
+            else
+            {
+                favoriteData = [[NSMutableArray alloc] initWithObjects: RouteName , [[delegate backIDs] objectAtIndex:Tag],nil];
+                fixedStringStopName = [self fixedStringBrackets: [[delegate stopsBack] objectAtIndex:Tag]];
+            }
+        }
+        /*else
+        {
+            favoriteData = [[NSMutableArray alloc] initWithObjects: RouteName , [[delegate m_waitTime] objectAtIndex:Tag],nil];
+        }*/
     }
-    else if ([delegate isKindOfClass:[FavoriteViewController class]]){
+    else if ([delegate isKindOfClass:[TPFavoriteViewController class]]){
         NSArray* temp = [[delegate favoriteDic] objectForKey: [[[delegate favoriteDic] allKeys] objectAtIndex:section ]];
         RouteName = [temp objectAtIndex:Tag*2];
         favoriteData = [[NSMutableArray alloc] initWithObjects:RouteName, [temp objectAtIndex:Tag*2+1],nil];
@@ -167,8 +138,8 @@
         fixedStringStopName = [delegate thisStop];
     }
     if (ButtonMode==1) {
-        NSMutableDictionary *favoriteDictionary = [[prefs objectForKey:AlarmUserDefaultKey] mutableCopy];
-        if (![prefs objectForKey:AlarmUserDefaultKey]) {
+        NSMutableDictionary *favoriteDictionary = [[prefs objectForKey:TPAlarmUserDefaultKey] mutableCopy];
+        if (![prefs objectForKey:TPAlarmUserDefaultKey]) {
             favoriteDictionary = [ NSMutableDictionary new ];
         }
         NSMutableArray* temp = [[favoriteDictionary objectForKey:fixedStringStopName] mutableCopy];
@@ -176,7 +147,17 @@
             if (![temp containsObject:RouteName]) {
                 [temp addObjectsFromArray:favoriteData];
                 [favoriteDictionary setObject:temp forKey:fixedStringStopName];
-                [self addNotification:[[delegate m_waitTimeResult] objectAtIndex:Tag] RouteName:RouteName andStopName:fixedStringStopName];
+                if([delegate isKindOfClass:[SecondLevelViewController class]])
+                {
+                    if(section == 0)
+                        [self addNotification:[[delegate goTimes] objectAtIndex:Tag] RouteName:RouteName andStopName:fixedStringStopName];
+                    else
+                        [self addNotification:[[delegate backTimes] objectAtIndex:Tag] RouteName:RouteName andStopName:fixedStringStopName];
+                }
+                else
+                {
+                    [self addNotification:[[delegate m_waitTimeResult] objectAtIndex:Tag] RouteName:RouteName andStopName:fixedStringStopName];
+                }
             }
             else{
                 NSInteger index = [temp indexOfObject:RouteName];
@@ -188,14 +169,24 @@
         }
         else{
             [favoriteDictionary setObject:favoriteData forKey:fixedStringStopName];
-            [self addNotification:[[delegate m_waitTimeResult] objectAtIndex:Tag] RouteName:RouteName andStopName:fixedStringStopName];
+            if([delegate isKindOfClass:[SecondLevelViewController class]])
+            {
+                if(section == 0)
+                    [self addNotification:[[delegate goTimes] objectAtIndex:Tag] RouteName:RouteName andStopName:fixedStringStopName];
+                else
+                    [self addNotification:[[delegate backTimes] objectAtIndex:Tag] RouteName:RouteName andStopName:fixedStringStopName];
+            }
+            else
+            {
+                [self addNotification:[[delegate m_waitTimeResult] objectAtIndex:Tag] RouteName:RouteName andStopName:fixedStringStopName];
+            }
         }
-        [prefs setObject:favoriteDictionary forKey:AlarmUserDefaultKey];
+        [prefs setObject:favoriteDictionary forKey:TPAlarmUserDefaultKey];
         
     }
     else if (ButtonMode==2) {
-        NSMutableDictionary *favoriteDictionary = [[prefs objectForKey:FavoriteUserDefaultKey] mutableCopy];
-        if (![prefs objectForKey:FavoriteUserDefaultKey]) {
+        NSMutableDictionary *favoriteDictionary = [[prefs objectForKey:TPFavoriteUserDefaultKey] mutableCopy];
+        if (![prefs objectForKey:TPFavoriteUserDefaultKey]) {
             favoriteDictionary = [ NSMutableDictionary new ];
         }
         NSMutableArray* temp = [[favoriteDictionary objectForKey:fixedStringStopName] mutableCopy];
@@ -208,7 +199,7 @@
         else{
             [favoriteDictionary setObject:favoriteData forKey:fixedStringStopName];
         }
-        [prefs setObject:favoriteDictionary forKey:FavoriteUserDefaultKey];
+        [prefs setObject:favoriteDictionary forKey:TPFavoriteUserDefaultKey];
     }
     [prefs synchronize];
     [[delegate navigationController].view addSubview:success];
@@ -234,10 +225,10 @@
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     NSMutableDictionary *dic;
     if (ButtonMode==1) {
-        dic = [[prefs objectForKey:AlarmUserDefaultKey] mutableCopy];
+        dic = [[prefs objectForKey:TPAlarmUserDefaultKey] mutableCopy];
     }
     else if(ButtonMode==2){
-        dic = [[prefs objectForKey:FavoriteUserDefaultKey] mutableCopy];
+        dic = [[prefs objectForKey:TPFavoriteUserDefaultKey] mutableCopy];
     }
     NSMutableArray* temp;
     if (Fix) {
@@ -285,26 +276,25 @@
 
 - (IBAction)buttonPress:(UIBarButtonItem *)sender
 {
-    if ([sender.title isEqualToString:ButtonText1]) {
+    if ([sender.title isEqualToString:TPButtonText1]) {
         ButtonMode=1;
     }
-    else if ([sender.title isEqualToString:ButtonText2]){
+    else if ([sender.title isEqualToString:TPButtonText2]){
         ButtonMode=2;
     }
     [[delegate tableView] reloadData];
 }
 
-
-- (IBAction)buttonPressHome:(UIBarButtonItem *)sender
+- (IBAction)buttonPressHome:(id)sender
 {
     [[delegate navigationController] popToRootViewControllerAnimated:YES];
-    
 }
 
-- (IBAction)buttonPressFavorite:(UIBarButtonItem *)sender{
+- (IBAction)buttonPressFavorite:(id)sender
+{
     AlertViewDelegate *alert = [[AlertViewDelegate alloc]init];
     [alert AlertViewStart];
-    FavoriteViewController *favorite = [[FavoriteViewController alloc] initWithStyle:UITableViewStylePlain];
+    TPFavoriteViewController *favorite = [[TPFavoriteViewController alloc] initWithStyle:UITableViewStylePlain];
     favorite.title = @"常用路線";
     [[delegate navigationController] pushViewController:favorite animated:YES];
     [favorite release];
@@ -313,17 +303,21 @@
 
 -(UIToolbar *)CreatTabBarWithNoFavorite:(BOOL) favorite delegate:(id)dele{
     delegate = dele;
-    if ([delegate isKindOfClass:[DepatureViewController class]]) {
+    if ([delegate isKindOfClass:[SecondLevelViewController class]]) {
         Fix = YES;
     }
-    UIBarButtonItem* barItem1 = [[UIBarButtonItem alloc] initWithTitle:ButtonText1 style:UIBarButtonItemStyleBordered target:self action:@selector(buttonPress:)];
-    UIBarButtonItem* barItem3 = [[UIBarButtonItem alloc] initWithTitle:ButtonText3 style:UIBarButtonItemStyleBordered target:self action:@selector(buttonPressHome:)];
-    UIBarButtonItem* barItem4 = [[UIBarButtonItem alloc] initWithTitle:ButtonText4 style:UIBarButtonItemStyleBordered target:self action:@selector(buttonPressFavorite:)];
+    else
+    {
+        Fix = YES;
+    }
+    UIBarButtonItem * barItem1 = [[UIBarButtonItem alloc] initWithTitle:TPButtonText1 style:UIBarButtonItemStyleBordered target:self action:@selector(buttonPress:)];
+    UIBarButtonItem * barItem3 = [[UIBarButtonItem alloc] initWithTitle:TPButtonText3 style:UIBarButtonItemStyleBordered target:self action:@selector(buttonPressHome:)];
+    UIBarButtonItem * barItem4 = [[UIBarButtonItem alloc] initWithTitle:TPButtonText4 style:UIBarButtonItemStyleBordered target:self action:@selector(buttonPressFavorite:)];
     if (favorite) {
         [toolbarcontroller setItems:[NSArray arrayWithObjects:barItem1, nil]];
     }
     else{
-        UIBarButtonItem* barItem2 = [[UIBarButtonItem alloc] initWithTitle:ButtonText2 style:UIBarButtonItemStyleBordered target:self action:@selector(buttonPress:)];
+        UIBarButtonItem* barItem2 = [[UIBarButtonItem alloc] initWithTitle:TPButtonText2 style:UIBarButtonItemStyleBordered target:self action:@selector(buttonPress:)];
         [toolbarcontroller setItems:[NSArray arrayWithObjects:barItem1,barItem2,barItem3,barItem4, nil]];
         [barItem2 release];
     }
@@ -340,6 +334,7 @@
     [success release];
     [localNotif release];
     [super dealloc];
+
 }
 
 @end

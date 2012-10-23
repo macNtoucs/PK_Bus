@@ -1,20 +1,22 @@
 //
-//  RootViewController.m
+//  TPRootViewController.m
 //  bus
 //
-//  Created by mac_hero on 12/5/18.
-//  Copyright 2012年 __MyCompanyName__. All rights reserved.
+//  Created by iMac on 12/9/3.
+//
 //
 
-#import "RootViewController.h"
-#import "AllRoutesViewController.h"
+#import "TPRootViewController.h"
+#import "TPAllRouteViewController.h"
+
 #define kPlainId				@"Plain"
 #define kTextFieldId			@"TextField"
 
-@implementation RootViewController
+@implementation TPRootViewController
 
 @synthesize editCell			= _editCell;
 @synthesize editWindow			= _editWindow;
+@synthesize xpathArray;
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -25,68 +27,43 @@
     return self;
 }
 
-- (void)didReceiveMemoryWarning
-{
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-    
-    // Release any cached data, images, etc that aren't in use.
-}
-
-#pragma mark - View lifecycle
-
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-   
     self.tableView.backgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"BGP.png"]];
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismisskeyboard)];
     tap.cancelsTouchesInView=NO;
     [self.tableView addGestureRecognizer:tap];
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(textDidChange) name:UITextFieldTextDidChangeNotification object:self.editCell.view];
-    instant_search = [SearchTableViewController new];
+    instant_search = [TPSearchTableViewController new];
     [instant_search setEnterFromRoot:self];
     instant_search.view.frame = CGRectMake(50, 87, 220, 0);
     instant_search.tableView.layer.borderWidth = 2.0f;
     instant_search.tableView.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    
+    /*NSError * error;
+    xpathArray = [[NSArray alloc] init];
+    NSData * htmlData = [[NSString stringWithContentsOfURL:[NSURL URLWithString:@"http://140.121.197.167/estimatetime.aspx_Command=All.xml"] encoding:NSUTF8StringEncoding error:&error] dataUsingEncoding:NSUTF8StringEncoding];
+    TFHpple * xpathParser = [[TFHpple alloc] initWithHTMLData:htmlData];
+    xpathArray = [xpathParser searchWithXPathQuery:@"//estimate"];
+    [xpathArray retain];
+    
+    [instant_search setter_estimateArray:xpathArray];*/
 }
-
 -(void)viewWillAppear:(BOOL)animated{
-   
+    
 }
 
 - (void)viewDidUnload
 {
     [super viewDidUnload];
-    
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
 }
 
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-    
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    [super viewWillDisappear:animated];
-   
-}
-
-- (void)viewDidDisappear:(BOOL)animated
-{
-    [super viewDidDisappear:animated];
-     
-}
-
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    // Return YES for supported orientations
-	return YES;
+    return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 #pragma mark - Table view data source
@@ -105,7 +82,8 @@
     return rows;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
 	switch (section)
 	{
 		case 0:
@@ -137,94 +115,91 @@
 	return returnTextField;
 }
 
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    
-    
     if ( indexPath.section==0){
-    switch (indexPath.row)
-    {
-        case 0:
-        {    
-            
-                self.editCell =  [[[CellTextField alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kTextFieldId] autorelease];	
+        switch (indexPath.row)
+        {
+            case 0:
+            {
+                
+                self.editCell =  [[[CellTextField alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kTextFieldId] autorelease];
                 self.editCell.view = [self createTextField_Rounded];
                 self.editCell.delegate = self;
                 self.editCell.accessoryType = UITableViewCellAccessoryDetailDisclosureButton;
-                self.editCell.imageView.image = [UIImage imageNamed:@"Find.png"]; 
+                self.editCell.imageView.image = [UIImage imageNamed:@"Find.png"];
                 self.editCell.cellLeftOffset = 40.0;
-            
-            // printf("kTableFindRowId %p\n", sourceCell);
-                return self.editCell;	
-        }
-
-      case 1:
-        {
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPlainId];
-            if (cell == nil) {
-                cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kPlainId] autorelease];
+                
+                // printf("kTableFindRowId %p\n", sourceCell);
+                return self.editCell;
             }
-            
-            // Set up the cell
-            cell.textLabel.text = @"瀏覽所有公車路線";
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            //[self maybeAddSectionToAccessibility:cell indexPath:indexPath alwaysSaySection:YES];
-           // cell.imageView.image = [self getActionIcon:kIconBrowse]; 
-           // cell.textLabel.font = [self getBasicFont];
-            cell.textLabel.adjustsFontSizeToFitWidth = YES;
-            return cell;
-        }
-    
-        case 2:
-        {
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPlainId];
-            if (cell == nil) {
-                cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kPlainId] autorelease];
+                
+            case 1:
+            {
+                UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPlainId];
+                if (cell == nil) {
+                    cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kPlainId] autorelease];
+                }
+                
+                // Set up the cell
+                cell.textLabel.text = @"瀏覽所有公車路線";
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                //[self maybeAddSectionToAccessibility:cell indexPath:indexPath alwaysSaySection:YES];
+                // cell.imageView.image = [self getActionIcon:kIconBrowse];
+                // cell.textLabel.font = [self getBasicFont];
+                cell.textLabel.adjustsFontSizeToFitWidth = YES;
+                return cell;
             }
-            
-            // Set up the cell
-            cell.textLabel.text = @"現在位置";	
-           // cell.textLabel.font = [self getBasicFont];
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            //[self maybeAddSectionToAccessibility:cell indexPath:indexPath alwaysSaySection:YES];
-            //cell.imageView.image = [self getActionIcon:kIconLocate]; 
-            return cell;
-        }
-        case 3:
-        {
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPlainId];
-            if (cell == nil) {
-                cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kPlainId] autorelease];
+                
+            case 2:
+            {
+                UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPlainId];
+                if (cell == nil) {
+                    cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kPlainId] autorelease];
+                }
+                
+                // Set up the cell
+                cell.textLabel.text = @"現在位置";
+                // cell.textLabel.font = [self getBasicFont];
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                //[self maybeAddSectionToAccessibility:cell indexPath:indexPath alwaysSaySection:YES];
+                //cell.imageView.image = [self getActionIcon:kIconLocate];
+                return cell;
             }
-            
-            // Set up the cell
-            cell.textLabel.text = @"常用站牌";
-            // cell.textLabel.font = [self getBasicFont];
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            //[self maybeAddSectionToAccessibility:cell indexPath:indexPath alwaysSaySection:YES];
-            //cell.imageView.image = [self getActionIcon:kIconArrivals]; 
-            return cell;
+            case 3:
+            {
+                UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPlainId];
+                if (cell == nil) {
+                    cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kPlainId] autorelease];
+                }
+                
+                // Set up the cell
+                cell.textLabel.text = @"常用站牌";
+                // cell.textLabel.font = [self getBasicFont];
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                //[self maybeAddSectionToAccessibility:cell indexPath:indexPath alwaysSaySection:YES];
+                //cell.imageView.image = [self getActionIcon:kIconArrivals];
+                return cell;
+            }
         }
-    }
     }
     if (indexPath.section==1){
-    switch (indexPath.row) {
-        {
-        case 0:{
-            
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPlainId];
-            if (cell == nil) {
-                cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kPlainId] autorelease];
+        switch (indexPath.row) {
+            {
+            case 0:{
+                
+                UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kPlainId];
+                if (cell == nil) {
+                    cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kPlainId] autorelease];
+                }
+                
+                cell.textLabel.text = @"關於我";	
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                return cell;
             }
-            
-            cell.textLabel.text = @"關於我";	
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-            return cell;
-        }
-        }
-       
             }
+                
+        }
     }
     return nil;
 }
@@ -235,6 +210,7 @@
     [ _editWindow release];
     [super dealloc];
 }
+
 /*
 // Override to support conditional editing of the table view.
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
@@ -250,7 +226,7 @@
 {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
     }   
     else if (editingStyle == UITableViewCellEditingStyleInsert) {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
@@ -281,12 +257,13 @@
 -(void) dismisskeyboard{
     [_editWindow resignFirstResponder];
     [NSTimer scheduledTimerWithTimeInterval: 0.2
-                                             target: self
-                                           selector: @selector(resign)
-                                           userInfo: nil
-                                            repeats: NO];
+                                     target: self
+                                   selector: @selector(resign)
+                                   userInfo: nil
+                                    repeats: NO];
 }
 
+// 創造小框框
 -(void)textDidChange{
     if([self.editCell.view.text length]==0)
         [instant_search.view removeFromSuperview];
@@ -300,7 +277,7 @@
         [instant_search.tableView reloadData];
         [self.view addSubview: instant_search.view];
     }
-        
+    
     
 }
 
@@ -316,7 +293,7 @@
 		c = [text characterAtIndex:i];
 		
         [res appendFormat:@"%C", c];
-	
+        
 	}
 	
 	return res;
@@ -329,12 +306,10 @@
 	
 	if (editText.length !=0)
 	{
-        SearchTableViewController *table = [[SearchTableViewController alloc] init];
+        TPSearchTableViewController *table = [[TPSearchTableViewController alloc] init];
         [table setInfo:editText];
         table.title = editText;
-       
         [self.navigationController pushViewController:table animated:YES];
-      
         [table release];
 	}
 }
@@ -360,15 +335,15 @@
 			break;
 		}
 	}
-
-
+    
+    
 }
 
 
 -(void)UpdateGPS{
-	locationManager = [[CLLocationManager alloc] init]; 
-	[locationManager setDelegate:self]; 
-	[locationManager setDesiredAccuracy:kCLLocationAccuracyBest];	
+	locationManager = [[CLLocationManager alloc] init];
+	[locationManager setDelegate:self];
+	[locationManager setDesiredAccuracy:kCLLocationAccuracyBest];
 	[locationManager startUpdatingLocation];
     isLocateFinished = NO;
 }
@@ -377,7 +352,7 @@
 	didUpdateToLocation:(CLLocation *)newLocation
 		   fromLocation:(CLLocation *)oldLocation
 {
-    if (! isLocateFinished){   
+    if (! isLocateFinished){
         [locationManager stopUpdatingLocation];
         MapViewController *map = [[MapViewController alloc] init];
         map.title = @"現在位置";
@@ -407,69 +382,54 @@
              break;*/
     }
 }
-    
+
 #pragma mark - Table view delegate
-- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error {
-    
-    //執行取消發送電子郵件畫面的動畫
-    [self dismissModalViewControllerAnimated:YES];
-}
-
-
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Navigation logic may go here. Create and push another view controller.
-    /*
-     <#DetailViewController#> *detailViewController = [[<#DetailViewController#> alloc] initWithNibName:@"<#Nib name#>" bundle:nil];
-     // ...
-     // Pass the selected object to the new view controller.
-     [self.navigationController pushViewController:detailViewController animated:YES];
-     [detailViewController release];
-   */
     if(indexPath.section==0){
-    switch (indexPath.row) {
-        case 1:{
-            AlertViewDelegate *alert = [[AlertViewDelegate alloc]init];
-            [alert AlertViewStart];
-            AllRoutesViewController *router = [AllRoutesViewController new];
-            router.title = @"公車路線";
-            [self.navigationController pushViewController:router animated:YES];
-            [router release];
-            [alert AlertViewEnd];
-            break;
-        }
-        case 2:{
-            AlertViewDelegate *alert = [[AlertViewDelegate alloc]init];
-            [alert AlertViewStart];
-            [self UpdateGPS];
-            [alert AlertViewEnd];
-            break;
-        }
-        case 3:{
-            AlertViewDelegate *alert = [[AlertViewDelegate alloc]init];
-            [alert AlertViewStart];
-            FavoriteViewController *favorite = [[FavoriteViewController alloc] initWithStyle:UITableViewStylePlain];
-            favorite.title = @"常用路線";
-            [self.navigationController pushViewController:favorite animated:YES];
-            [favorite release];
-            [alert AlertViewEnd];
-            break;
-        }
-        default:
-            break;
+        switch (indexPath.row) {
+            case 1:{
+                AlertViewDelegate *alert = [[AlertViewDelegate alloc]init];
+                [alert AlertViewStart];
+                FirstLevelViewController * router = [[FirstLevelViewController alloc] initWithNibName:@"TPAllRouteViewController" bundle:nil];
+                router.title = @"公車路線";
+                [self.navigationController pushViewController:router animated:YES];
+                [router release];
+                [alert AlertViewEnd];
+                break;
+            }
+            case 2:{
+                AlertViewDelegate *alert = [[AlertViewDelegate alloc]init];
+                [alert AlertViewStart];
+                [self UpdateGPS];
+                [alert AlertViewEnd];
+                break;
+            }
+            case 3:{
+                AlertViewDelegate *alert = [[AlertViewDelegate alloc]init];
+                [alert AlertViewStart];
+                TPFavoriteViewController *favorite = [[TPFavoriteViewController alloc] initWithStyle:UITableViewStylePlain];
+                favorite.title = @"常用路線";
+                [self.navigationController pushViewController:favorite animated:YES];
+                [favorite release];
+                [alert AlertViewEnd];
+                break;
+            }
+            default:
+                break;
         }
     }
     if (indexPath.section==1){
         switch (indexPath.row){
             case 0:{
-                AboutMeTableViewController *controller = [[AboutMeTableViewController alloc]initWithStyle:UITableViewStyleGrouped];
+                TPAboutMeTableViewController *controller = [[TPAboutMeTableViewController alloc]initWithStyle:UITableViewStyleGrouped];
                 controller.title = @"關於我";
                 [self.navigationController pushViewController:controller animated:YES];
                 [controller release];
                 break;   
             }
-                     
+                
         }
     }
 }

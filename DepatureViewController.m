@@ -179,6 +179,7 @@
     
 }
 
+
    
 - (void)viewDidLoad
 {
@@ -223,6 +224,7 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [self.navigationController.view addSubview:toolbar.toolbarcontroller];
+    [self.toolbar hideTabBar:self.tabBarController];
     [super viewWillAppear:animated];
 }
 
@@ -238,6 +240,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [toolbar.toolbarcontroller removeFromSuperview];
+    [self.toolbar showTabBar: self.tabBarController];
     [super viewWillDisappear:animated];
 }
 
