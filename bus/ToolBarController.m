@@ -338,7 +338,6 @@
     [toolbarcontroller release];
     [button release];
     [success release];
-    [localNotif release];
     [super dealloc];
 }
 
